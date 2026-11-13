@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package sample.v1;
+
+option go_package = "example.com/sample/server/gen/sample/v1;samplev1";
+
+service SampleService {
+  // Normal unary message.
+  rpc Echo(EchoRequest) returns (EchoResponse);
+  // Client-side batching: many events in one unary call.
+  rpc ReportTelemetry(ReportTelemetryRequest) returns (ReportTelemetryResponse);
+  // Server streaming notifications, resumable via last_seen_id.
+  rpc Subscribe(SubscribeRequest) returns (stream Notification);
+}
+
+message EchoRequest {
+  string message = 1;
+}
+
+message EchoResponse {
+  string message = 1;
+  string http_version = 2; // negotiated by the server, e.g. "HTTP/1.1"
+}
+
+message Event {
+  string name = 1;
+  double value = 2;
+  int64 timestamp_unix_ms = 3;
+}
+
+message ReportTelemetryRequest {
+  string batch_id = 1;
+  repeated Event events = 2;
+}
+
+message ReportTelemetryResponse {
+  int32 accepted = 1;
+  bool duplicate = 2;
+  string http_version = 3;
+}
+
+message SubscribeRequest {
+  uint64 last_seen_id = 1;
+  int32 max_notifications = 2; // 0 = until max lifetime
+}
+
+message Notification {
+  uint64 id = 1;
+  bool heartbeat = 2;
+  string text = 3;
+  string http_version = 4;
+}

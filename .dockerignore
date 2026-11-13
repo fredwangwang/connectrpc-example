@@ -1,0 +1,4 @@
+.git
+build
+client-rs/target
+server/gen
